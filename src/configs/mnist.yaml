@@ -1,0 +1,63 @@
+directory: ! "/home/metehan/hebbian/"
+tensorboard_location: ! "statistics/"
+data_dir: ! "/data/datasets"
+dataset: ! "mnist"
+
+nn:
+  classifier: ! "Custom_LeNet"
+  thresholding:
+    - 0.8
+    - 0.8
+  divisive:
+    sigma: 0.5
+    alpha: 0.0
+  implicit_normalization: ! "l2"
+  normalize_input: false
+  lr: 0.001
+  lr_min: 0.0
+  lr_max: 0.001
+  momentum: 0.9
+  weight_decay: 0.0
+  optimizer: "adam"
+  scheduler: "none"
+  model_path: "checkpoints/"
+  
+train:
+  batch_size: 128
+  epochs: 40
+  reg:
+    active:
+      - hebbian
+    hebbian:
+      scale: 1.0
+      k: 5
+      lamda: 0.1
+      dim: 1
+      tobe_regularized:
+        - relu1
+    l1:
+      scale: 0.1
+  
+  
+test:
+  batch_size: 1000
+
+attack:
+  norm: "inf"
+  epsilon: 0.2
+  alpha: 0.4
+  step_size: 0.05
+  num_steps: 30
+  random: false
+  num_restarts: 1
+  EOT_size: 1
+  loss: "cross_entropy"
+
+
+
+no_cuda: false
+seed: 2022
+log_interval: 10
+no_tensorboard: true
+save_model: true
+
