@@ -16,8 +16,8 @@ vgg_depth_dict = {
 
 class HaH_VGG(nn.Module):
     def __init__(
-        self, vgg_depth: str = "VGG16", conv_layer_name: str = "conv2d", conv_layer_type: type = nn.Conv2d, divisive_sigma: Optional[float] = None, threshold: Optional[float] = None
-    ) -> None:
+            self, vgg_depth: str = "VGG16", conv_layer_name: str = "conv2d", conv_layer_type: type = nn.Conv2d, divisive_sigma: Optional[float] = None, threshold: Optional[float] = None, hah_count: int = 7
+            ) -> None:
         super().__init__()
         self.normalize = Normalize((0.4914, 0.4822, 0.4465),
                                    (0.2471, 0.2435, 0.2616))
@@ -26,6 +26,7 @@ class HaH_VGG(nn.Module):
         self.conv_layer_type = conv_layer_type
         self.divisive_sigma = divisive_sigma
         self.threshold = threshold
+        self.hah_count = hah_count
 
         self.features = self.make_layers(vgg_depth_dict[vgg_depth])
         self.classifier = nn.Linear(512, 10)
@@ -63,29 +64,18 @@ class HaH_VGG(nn.Module):
             else:
                 layer_width = layer_info
                 threshold_layer = []
-                if type(self.divisive_sigma) == float and layer_i <= 7:
+                if type(self.divisive_sigma) == float and layer_i <= self.hah_count:
                     normalization_layer: nn.Module = DivisiveNormalization2d(
                         sigma=self.divisive_sigma)
                 else:
                     normalization_layer = nn.BatchNorm2d(layer_width)
 
-                if (self.threshold is not None and self.threshold > 0.0) and layer_i <= 7:
+                if (self.threshold is not None and self.threshold > 0.0) and layer_i <= self.hah_count:
                     threshold_layer = [AdaptiveThreshold(
                         mean_scalar=self.threshold)]
-                elif (self.threshold is not None and self.threshold < 0.0) and layer_i <= 7:
-                    if self.threshold == -0.123:
-                        if layer_i == 0:
-                            threshold_layer = [FractionalThreshold(
-                                remaining_ratio=0.1)]
-                        elif layer_i == 1:
-                            threshold_layer = [FractionalThreshold(
-                                remaining_ratio=0.2)]
-                        else:
-                            threshold_layer = [FractionalThreshold(
-                                remaining_ratio=0.3)]
-                    else:
-                        threshold_layer = [FractionalThreshold(
-                                remaining_ratio=-self.threshold)]
+                elif (self.threshold is not None and self.threshold < 0.0) and layer_i <= self.hah_count:
+                    threshold_layer = [FractionalThreshold(
+                        remaining_ratio=-self.threshold)]
 
                 conv_layer = self.conv_layer_type(
                     in_channels, layer_width, kernel_size=3, padding=1, bias=False)

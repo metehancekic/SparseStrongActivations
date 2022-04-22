@@ -1,9 +1,4 @@
 """
-Description: Training and testing functions for neural models
-
-functions:
-    train: Performs a single training epoch (if attack_args is present adversarial training)
-    test: Evaluates model by computing accuracy (if attack_args is present adversarial testing)
 """
 
 from tqdm import tqdm
@@ -72,7 +67,7 @@ def single_epoch(cfg,
                 activation_disparity += torch.Tensor(
                     top_K_activations_per_layer).to(device)-torch.Tensor(bottom_activations_per_layer).to(device)
             if "hah" in cfg.train.regularizer.active:
-                scalar_vector = torch.Tensor(cfg.train.regularizer.hah.alpha).to(device)  
+                scalar_vector = torch.Tensor(cfg.train.regularizer.hah.alpha).to(device)
                 for idx, (layer, layer_input, layer_output) in list(enumerate(zip(model.layers_of_interest.values(), model.layer_inputs.values(), model.layer_outputs.values())))[::-1]:
                     if scalar_vector[idx] == 0.0:
                         continue
@@ -97,7 +92,7 @@ def single_epoch(cfg,
         loss = 0.0
         output = model(data)
         xent_loss = cross_ent(output, target)
-        
+
         l1_weight_loss = 0
         if "l1_weight" in cfg.train.regularizer.active:
             for _, layer in model.named_modules():
@@ -184,5 +179,3 @@ def standard_test(model, test_loader, verbose=True, progress_bar=False):
             f"Test loss: {test_loss/test_size:.4f}, Test acc: {100*test_correct/test_size:.2f}")
 
     return test_loss/test_size, test_correct/test_size
-
-

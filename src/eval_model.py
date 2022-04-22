@@ -1,6 +1,5 @@
 """
-Example Run
-python -m src.cifar.main  --model VGG11 -tr -sm
+
 """
 
 from cgi import test
@@ -24,8 +23,14 @@ from .utils.namers import classifier_ckpt_namer
 from .utils import HaH_VGG
 from .utils import settings
 
-@hydra.main(config_path="/home/metehan/SparseStrongActivations/src/configs", config_name="cifar")
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), verbose=True)
+project_dir = os.getenv("PROJECT_DIR")
+
+
+@hydra.main(config_path=project_dir + "src/configs", config_name="cifar")
 def main(cfg: DictConfig) -> None:
+    cfg.directory = project_dir
 
     np.random.seed(cfg.seed)
     torch.manual_seed(cfg.seed)
@@ -39,7 +44,7 @@ def main(cfg: DictConfig) -> None:
 
     logger = init_logger(cfg, model.name)
 
-    classifier_filepath = classifier_ckpt_namer(model_name=model.name, cfg=cfg)    
+    classifier_filepath = classifier_ckpt_namer(model_name=model.name, cfg=cfg)
     model.load_state_dict(torch.load(classifier_filepath))
     model = SpecificLayerTypeOutputExtractor_wrapper(model, layer_type=torch.nn.Conv2d)
     model.eval()
@@ -51,22 +56,24 @@ def main(cfg: DictConfig) -> None:
         logger.info(model)
         logger.info(classifier_filepath)
 
-    test_loss, test_acc = standard_test(model=model, test_loader=test_loader, verbose=False, progress_bar=False)
+    test_loss, test_acc = standard_test(
+        model=model, test_loader=test_loader, verbose=False, progress_bar=False)
     logger.info(f'Test  \t loss: {test_loss:.4f} \t acc: {test_acc:.4f}')
 
-    ## Noisy Test Set Evaluation
+    # Noisy Test Set Evaluation
     noisy_acc = [None]*cfg.noisy.num_experiments
     noisy_loss = [None]*cfg.noisy.num_experiments
     for i in range(cfg.noisy.num_experiments):
         noise_std = cfg.noisy.std
         noisy_acc[i], noisy_loss[i], _ = test_noisy(model, test_loader, noise_std)
-    
+
     logger.info(f'Noise std 0.1: Test  \t loss: {sum(noisy_loss)/cfg.noisy.num_experiments:.4f} \t acc: {sum(noisy_acc)/cfg.noisy.num_experiments:.4f}')
 
-    ## Auto Attack
+    # Auto Attack
     x_test, y_test = load_cifar10(n_examples=10000, data_dir=cfg.dataset.directory)
 
-    adversary = AutoAttack(model, norm='L2', eps=0.25, version="custom", attacks_to_run=['apgd-ce', 'apgd-t'])
+    adversary = AutoAttack(model, norm='L2', eps=0.25, version="custom",
+                           attacks_to_run=['apgd-ce', 'apgd-t'])
     adversary.apgd.n_restarts = 1
 
     print("#" + "-"*100 + "#")
@@ -74,8 +81,9 @@ def main(cfg: DictConfig) -> None:
     print("#" + "-"*100 + "#")
 
     x_adv = adversary.run_standard_evaluation(x_test, y_test)
-    
-    adversary = AutoAttack(model, norm='Linf', eps=2/255, version="custom", attacks_to_run=['apgd-ce', 'apgd-t'])
+
+    adversary = AutoAttack(model, norm='Linf', eps=2/255, version="custom",
+                           attacks_to_run=['apgd-ce', 'apgd-t'])
     adversary.apgd.n_restarts = 1
 
     print("#" + "-"*100 + "#")
@@ -83,10 +91,6 @@ def main(cfg: DictConfig) -> None:
     print("#" + "-"*100 + "#")
 
     x_adv = adversary.run_standard_evaluation(x_test, y_test)
-
-
-
-    
 
 
 if __name__ == "__main__":

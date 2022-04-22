@@ -25,8 +25,6 @@ from .utils import HaH_VGG
 from .utils import ImplicitNormalizationConv
 
 
-
-
 def init_logger(cfg, model_name):
 
     logger = logging.getLogger(__name__)
@@ -58,7 +56,8 @@ def init_dataset(cfg):
 
 def init_classifier(cfg):
     conv_layer_types = {"conv2d": nn.Conv2d, "implicitconv2d": ImplicitNormalizationConv}
-    classifier = HaH_VGG(vgg_depth = "VGG16", conv_layer_name=cfg.nn.conv_layer_type, conv_layer_type=conv_layer_types[cfg.nn.conv_layer_type], divisive_sigma=cfg.nn.divisive.sigma, threshold=cfg.nn.threshold)
+    classifier = HaH_VGG(vgg_depth="VGG16", conv_layer_name=cfg.nn.conv_layer_type,
+                         conv_layer_type=conv_layer_types[cfg.nn.conv_layer_type], divisive_sigma=cfg.nn.divisive.sigma, threshold=cfg.nn.threshold, hah_count=cfg.nn.hah_count)
     return classifier
 
 
