@@ -1,1 +1,1 @@
-from .get_dataset_loaders import tiny_imagenet, imagenette, cifar10, imagenet, mnist, get_loaders
+from .get_dataset_loaders import cifar10, get_loaders
