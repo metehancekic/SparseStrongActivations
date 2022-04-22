@@ -117,7 +117,8 @@ def single_epoch(cfg,
     train_size = len(train_loader.dataset)
     train_loss = train_loss/train_size
     train_acc = train_correct/train_size
-    activation_disparity = activation_disparity/len(train_loader)
+    if cfg.compute_activation_disparity:
+        activation_disparity = activation_disparity/len(train_loader)
 
     if verbose:
         logging_func(
