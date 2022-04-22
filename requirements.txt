@@ -1,3 +1,4 @@
+autoattack==0.1
 deepillusion==0.3.2
 foolbox==3.3.1
 Hydra==2.5
