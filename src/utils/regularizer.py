@@ -53,7 +53,7 @@ def hah_K(activations: torch.Tensor, K: int, demote: float = 1.0, dim: int = 1, 
         return torch.mean(top_K_avg_normalized), torch.mean(bottom_avg_normalized), torch.mean(top_K_avg-demote*bottom_avg)
     
     else:
-        return torch.mean(top_K_avg), torch.mean(bottom_avg), torch.mean(top_K_avg-demote*top_K_avg)
+        return torch.mean(top_K_avg), torch.mean(bottom_avg), torch.mean(top_K_avg-demote*bottom_avg)
 
 
 def hah_loss(activations: torch.Tensor, ratio: float, demote: float = 1.0, dim: int = 1, patches: Optional[torch.Tensor] = None, weights: Optional[torch.Tensor] = None, **kwargs):
